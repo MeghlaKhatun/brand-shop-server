@@ -98,19 +98,60 @@ async function run() {
       res.send(result)
     })
 
-    app.post("/carts", async (req, res) => {
-      const cart = req.body;
-      console.log(cart);
-      const result = await cartCollection.insertOne(cart);
-      res.send(result)
-    })
+    // app.post("/carts", async (req, res) => {
+    //   const cart = req.body;
+    //   console.log(cart);
+    //   const result = await cartCollection.insertOne(cart);
+    //   res.send(result)
+    // })
 
-    app.delete("/carts/:id", async (req, res) => {
-      const id = req.params.id
-      const query = { _id: new ObjectId(id) }
-      const result = await cartCollection.deleteOne(query)
-      res.send(result)
-    })
+    app.put('/carts', async (req, res) => {
+      const data = req.body;
+      console.log(data);
+      const filter = {
+          $and: [
+              { email: data.email },
+              { id: data.id }
+          ]
+      };
+const options = { upsert: true };
+      const cart = {
+          $set: {
+              id: data.id,
+              email: data.email,
+              photo:data.photo, 
+              brand_name:data.brand_name, 
+              description:data.description, 
+              price:data.price, 
+              type:data.type 
+
+          }
+      }
+      const result = await cartCollection.updateOne(filter, cart, options);
+      res.send(result);
+  })
+
+    // app.delete("/carts/:id", async (req, res) => {
+    //   const id = req.params.id
+    //   const query = { _id: new ObjectId(id) }
+    //   const result = await cartCollection.deleteOne(query)
+    //   res.send(result)
+    // })
+
+
+    app.delete('/carts', async (req, res) => {
+      const data = req.body;
+      console.log(data);
+      // const query = { prodId: data.id };
+      const filter = {
+          $and: [
+              { email: data.email },
+              {id: data.id }
+          ]
+      }
+      const result = await cartCollection.deleteOne(filter);
+      res.send(result);
+  })
 
 
 
