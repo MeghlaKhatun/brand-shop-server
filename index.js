@@ -31,52 +31,84 @@ async function run() {
     // await client.connect();
 
     const productCollection = client.db("productDB").collection("product");
-    const cartCollection=client.db("productDB").collection("cart")
+    const cartCollection = client.db("productDB").collection("cart")
 
 
-    app.get("/products",async(req,res)=>{
+    app.get("/products", async (req, res) => {
       const cursor = productCollection.find();
-      const result =await cursor.toArray();
+      const result = await cursor.toArray();
       res.send(result)
     })
 
 
     app.get("/products/:name", async (req, res) => {
       const name = req.params.name;
-      const query = { brand_name : name };
+      const query = { brand_name: name };
       const result = await productCollection.find(query).toArray();
       res.send(result);
-  })
+    })
+
+    app.get("/updateProducts/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id)
+      const query = { _id: new ObjectId(id) };
+      const result = await productCollection.findOne(query);
+      console.log(result)
+      res.send(result)
+    })
+
+    app.put("/updateProducts/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedProduct=req.body;
+
+      const product = {
+        $set: {
+          name: updatedProduct.name,
+          photo: updatedProduct.photo,
+          brand_name: updatedProduct.brand_name,
+          type: updatedProduct.type,
+          ratting: updatedProduct.ratting,
+          price: updatedProduct.price,
+          description:updatedProduct.description,
+        }
+      }
+
+      const result =await productCollection.updateOne(filter,product,options)
+      res.send(result)
+
+    })
 
 
 
-    app.post('/products',async(req,res)=>{
-      const addProduct=req.body;
+    app.post('/products', async (req, res) => {
+      const addProduct = req.body;
       console.log(addProduct);
-      const result= await productCollection.insertOne(addProduct);
+      const result = await productCollection.insertOne(addProduct);
       res.send(result)
     })
 
 
     //cart collection
 
-    app.get("/carts",async(req,res)=>{
+    app.get("/carts", async (req, res) => {
       const cursor = cartCollection.find();
       const result = await cursor.toArray();
       res.send(result)
     })
 
-    app.post("/carts",async(req,res)=>{
-      const cart=req.body;
+    app.post("/carts", async (req, res) => {
+      const cart = req.body;
       console.log(cart);
-      const result=await cartCollection.insertOne(cart);
+      const result = await cartCollection.insertOne(cart);
       res.send(result)
     })
 
-    app.delete("/carts/:id",async(req,res)=>{
-      const id = req.params.id;
-      const query ={_id: new ObjectId(id)};
-      const result = await cartCollection.deleteOne(query);
+    app.delete("/carts/:id", async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await cartCollection.deleteOne(query)
       res.send(result)
     })
 
@@ -98,10 +130,10 @@ run().catch(console.dir);
 
 
 
-app.get("/",(req,res)=>{
-    res.send("Add Product server is running")
+app.get("/", (req, res) => {
+  res.send("Add Product server is running")
 })
 
-app.listen(port,()=>{
-    console.log(`Add Product port: ${port}`)
+app.listen(port, () => {
+  console.log(`Add Product port: ${port}`)
 })
